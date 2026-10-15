@@ -1,0 +1,59 @@
+LIFTING DIARY - SESSION NOTES (2026-10-08)
+==========================================
+
+PROJECT
+- Workout logging app: Next.js 16.3.5, React 19, Tailwind v4, Clerk auth,
+  Drizzle ORM (1.0 release candidate) + Neon Postgres.
+
+DONE SO FAR
+1. Git: made the initial commit (ce58293) on branch main
+   ("Initial commit: Next.js scaffold with Clerk auth").
+   Git identity set globally (user.name rxyaen, user.email biplogogo@gmail.com).
+
+2. Database schema written with Drizzle (normalized):
+   - exercises          id, user_id (Clerk ID), name, created_at, updated_at
+                        unique (user_id, name)
+   - workouts           id, user_id, name (optional), started_at, completed_at,
+                        created_at, updated_at
+                        index (user_id, started_at)
+   - workout_exercises  id, workout_id -> workouts (CASCADE),
+                        exercise_id -> exercises (RESTRICT),
+                        "order", created_at
+                        unique (workout_id, "order"); index on exercise_id
+   - sets               id, workout_exercise_id -> workout_exercises (CASCADE),
+                        set_number, reps, weight numeric(6,2) (kg, null for
+                        bodyweight), created_at
+                        unique (workout_exercise_id, set_number)
+                        checks: reps > 0, weight >= 0
+   Relationships: workout -> many workout_exercises -> many sets;
+   each workout_exercise points at one exercise from the catalog.
+
+3. Files created/changed:
+   - src/db/schema.ts       tables, constraints, inferred types
+   - src/db/relations.ts    relations (defineRelations syntax)
+   - src/db/index.ts        Neon http client using DATABASE_URL
+   - drizzle.config.ts      drizzle-kit config (schema -> ./drizzle)
+   - package.json           scripts: db:generate, db:migrate, db:studio
+   - drizzle/20261008093210_wise_dreaming_celestial/migration.sql
+                            generated migration (reviewed, looks correct)
+
+4. Checks: tsc --noEmit and npm run lint pass; db:generate works.
+
+NOT DONE YET / NEXT STEPS
+1. Add DATABASE_URL=<Neon connection string> to .env
+   (.env currently only has the Clerk variables).
+2. Run: npm run db:migrate   (creates the tables on Neon)
+3. Test: insert a workout with 2 exercises x 3 sets, read it back with a
+   relational query, and confirm deleting the workout cascades.
+4. Commit the schema work (nothing after the initial commit is committed).
+   Uncommitted: src/db/*, drizzle.config.ts, package.json, drizzle/,
+   SESSION_NOTES.txt
+5. Then: build the app features (log workout UI, history, etc.).
+
+REMINDERS
+- Read the relevant guide in node_modules/next/dist/docs/ before writing
+  Next.js code (this version has breaking changes, see AGENTS.md).
+- Never commit or print .env contents.
+- Plan file: C:\Users\user\.claude\plans\this-is-a-workout-sharded-finch.md
+
+MCP stands for Model Context Protocol, it help us provide bunch of tools to LLM to run on our behalf
