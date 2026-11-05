@@ -83,6 +83,14 @@ Next.js + React pages  ── styled with Tailwind + shadcn/ui
    - Added shadcn `calendar` + `popover` (`npx shadcn@latest add calendar popover`; installs `react-day-picker`).
    - `tsc --noEmit` and `npm run lint` pass. **Not yet tested in the browser / with real data.**
    - Known limitation: days are calculated in **UTC**, so late-evening workouts may show on the wrong date depending on your timezone. Fix later by storing the user's timezone (e.g. cookie).
+10. **UI standards + dashboard rework (5 Nov, branch `dashboard`):**
+   - `docs/ui.md` — UI coding standard: ONLY shadcn/ui components, NO custom components; dates formatted with date-fns as `do MMM yyyy` (e.g. `1st Sep 2025`).
+   - `CLAUDE.md` — new rule: all generated code must FIRST read the relevant file(s) in `/docs`; "Project state" section rewritten (current branch, what's built, env vars live in `.env`).
+   - `src/app/dashboard/page.tsx` — rewritten as a **UI-only** `"use client"` page: shadcn Popover + Calendar date picker (defaults to today, label via date-fns) and shadcn Card list of workouts using **hardcoded placeholder data**. No Clerk `auth()`, no `getWorkoutsForDate`, no `searchParams`.
+   - Deleted `src/app/dashboard/date-picker.tsx` (custom component, not allowed by `docs/ui.md`).
+   - Added shadcn `card`, `input`, `label` (input/label currently unused).
+   - `src/data/workouts.ts` and `src/db/*` untouched, ready to be wired back in.
+   - `tsc --noEmit` and `npm run lint` pass. **Not yet checked in the browser.**
 
 ### Differences from the instructor (expected, not errors)
 - IDs are **integers** (1, 2, 3); instructor uses **uuid**. When his code reads an ID from the URL, yours needs `Number(workoutId)`. Keep integers now that tables exist.
@@ -96,8 +104,11 @@ Next.js + React pages  ── styled with Tailwind + shadcn/ui
 3. **Test the database:** insert a workout with 2 exercises × 3 sets, read it back with a relational query, confirm deleting the workout cascades to its sets.
 4. **Clerk keys:** make sure only the `simple-escargot-3754` key pair is in `.env` (remove the old `proven-turkey-4314` pair if it's still there) and rotate the Clerk secret key in the Clerk dashboard (it was pasted in a chat).
 5. **Test `/dashboard`:** run `npm run dev`, sign in, insert a sample workout (see item 3) and check it appears on the right date.
-6. **Commit the dashboard work** (on branch `dashboard`): `src/app/dashboard/`, `src/data/`, `src/db/index.ts`, `src/components/ui/{calendar,popover}.tsx`, `package.json`, `package-lock.json`, notes.
-7. Then build more app features (log workout UI, history, etc.).
+6. ~~Commit the dashboard work~~ — done (committed and pushed on `dashboard`).
+7. **Wire the dashboard to real data:** reconnect `getWorkoutsForDate` (Clerk `auth()` + selected date) to the UI-only page without breaking `docs/ui.md` (no custom components). Decide how the client date picker passes the date to the server (e.g. `?date=` search param) and remove the placeholder data. Revisit the UTC-day limitation.
+8. Test `/dashboard` in the browser (`npm run dev`) and check the date format looks like `5th Nov 2026`.
+9. Remove the unused `input`/`label` shadcn components if they stay unused.
+10. Then build more app features (log workout UI, history, etc.).
 
 ---
 
