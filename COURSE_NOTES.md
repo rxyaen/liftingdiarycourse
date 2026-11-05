@@ -75,6 +75,14 @@ Next.js + React pages  ── styled with Tailwind + shadcn/ui
    - Shape: workout → many workout_exercises → many sets; each workout_exercise points at one exercise from the catalog.
 7. **Files created/changed:** `src/db/schema.ts` (tables + types), `src/db/relations.ts` (defineRelations), `src/db/index.ts` (Neon http client using `DATABASE_URL`), `drizzle.config.ts`, `package.json` scripts (`db:generate`, `db:migrate`, `db:studio`), `drizzle/20261008093210_wise_dreaming_celestial/migration.sql`. `tsc --noEmit` and `npm run lint` pass.
 8. **Tables created in Neon (15 Oct):** `npx drizzle-kit push` → "Changes applied".
+9. **`/dashboard` page (15 Oct, branch `dashboard`):** date picker (defaults to today) + list of that day's logged workouts.
+   - `src/app/dashboard/page.tsx` — server page; checks Clerk `auth()` (redirects to `/sign-in`), reads `?date=YYYY-MM-DD` from `searchParams` (falls back to today if missing/invalid), shows workouts → exercises → sets (reps × kg, or "bodyweight").
+   - `src/app/dashboard/date-picker.tsx` — client component (shadcn Calendar in a Popover); picking a day pushes `/dashboard?date=...`.
+   - `src/data/workouts.ts` — `getWorkoutsForDate(userId, date)`; relational query filtered by the signed-in user only.
+   - `src/db/index.ts` — now passes `relations` to `drizzle(...)` (needed for nested queries).
+   - Added shadcn `calendar` + `popover` (`npx shadcn@latest add calendar popover`; installs `react-day-picker`).
+   - `tsc --noEmit` and `npm run lint` pass. **Not yet tested in the browser / with real data.**
+   - Known limitation: days are calculated in **UTC**, so late-evening workouts may show on the wrong date depending on your timezone. Fix later by storing the user's timezone (e.g. cookie).
 
 ### Differences from the instructor (expected, not errors)
 - IDs are **integers** (1, 2, 3); instructor uses **uuid**. When his code reads an ID from the URL, yours needs `Number(workoutId)`. Keep integers now that tables exist.
@@ -87,7 +95,9 @@ Next.js + React pages  ── styled with Tailwind + shadcn/ui
 2. **push vs migrate:** tables were created with `drizzle-kit push`, while a migration file also exists in `drizzle/`. Running `npm run db:migrate` now may fail with "table already exists". Follow whichever the instructor uses next; if it errors, ask Claude to fix.
 3. **Test the database:** insert a workout with 2 exercises × 3 sets, read it back with a relational query, confirm deleting the workout cascades to its sets.
 4. **Clerk keys:** make sure only the `simple-escargot-3754` key pair is in `.env` (remove the old `proven-turkey-4314` pair if it's still there) and rotate the Clerk secret key in the Clerk dashboard (it was pasted in a chat).
-5. Then build app features (log workout UI, history, etc.).
+5. **Test `/dashboard`:** run `npm run dev`, sign in, insert a sample workout (see item 3) and check it appears on the right date.
+6. **Commit the dashboard work** (on branch `dashboard`): `src/app/dashboard/`, `src/data/`, `src/db/index.ts`, `src/components/ui/{calendar,popover}.tsx`, `package.json`, `package-lock.json`, notes.
+7. Then build more app features (log workout UI, history, etc.).
 
 ---
 
