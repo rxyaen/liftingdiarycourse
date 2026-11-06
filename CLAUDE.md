@@ -36,4 +36,3 @@ There is no test runner configured yet.
 - App Router (`src/app`), TypeScript, Tailwind CSS v4 (via `@tailwindcss/postcss`, no `tailwind.config` file — v4 uses CSS-based config in `globals.css`).
 - Path alias `@/*` maps to `src/*` (see `tsconfig.json`).
 - **Before writing any code**, read the relevant guide under `node_modules/next/dist/docs/` — this project pins a Next.js version with breaking changes relative to older/training-data Next.js conventions (see `AGENTS.md`). Check for deprecation notices before using patterns you already know. The docs are split into `01-app` (App Router — the one this project uses), `02-pages`, `03-architecture`, and `04-community`; start in `01-app`.
-- `.env.local` exists locally for environment variables; don't commit or echo its contents.
